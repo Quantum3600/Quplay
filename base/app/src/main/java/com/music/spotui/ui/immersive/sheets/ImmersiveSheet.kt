@@ -39,6 +39,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
+import com.music.spotui.ui.components.ConfigureSheetWindow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
@@ -156,6 +157,7 @@ fun ImmersiveSheet(
         dragHandle = null,
         contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
     ) {
+        ConfigureSheetWindow()
         CompositionLocalProvider(
             LocalImmersiveSheetTint provides tint,
             LocalOverscrollFactory provides rememberImmersiveOverscrollFactory(),

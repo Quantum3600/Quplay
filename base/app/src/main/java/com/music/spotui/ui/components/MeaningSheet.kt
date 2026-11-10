@@ -99,6 +99,7 @@ fun AboutSheet(original: GeniusMeaning.Meaning, background: Color, onDismiss: ()
         containerColor = cardColor(background),
         dragHandle = { androidx.compose.material3.BottomSheetDefaults.DragHandle(color = Color.White.copy(alpha = 0.4f)) },
     ) {
+        ConfigureSheetWindow()
         Column(Modifier.fillMaxWidth().fillMaxHeight(0.8f).navigationBarsPadding().verticalScroll(rememberScrollState()).padding(24.dp, 4.dp, 24.dp, 24.dp)) {
             Text(stringResource(R.string.lyrics_meaning_about), color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Text("${m.title} · ${m.artist}", color = Color.White.copy(alpha = 0.7f), fontSize = 14.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 2.dp))
@@ -130,6 +131,7 @@ fun NoteSheet(original: GeniusMeaning.Meaning, index: Int, background: Color, on
         containerColor = cardColor(background),
         dragHandle = { androidx.compose.material3.BottomSheetDefaults.DragHandle(color = Color.White.copy(alpha = 0.4f)) },
     ) {
+        ConfigureSheetWindow()
         Column(Modifier.fillMaxWidth().navigationBarsPadding().heightIn(max = 560.dp).verticalScroll(rememberScrollState()).padding(24.dp, 4.dp, 24.dp, 24.dp)) {
             Text(note.fragment, color = Color.White, fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.Bold)
             Text(note.explanation, color = Color.White.copy(alpha = 0.9f), fontSize = 16.sp, lineHeight = 23.sp,

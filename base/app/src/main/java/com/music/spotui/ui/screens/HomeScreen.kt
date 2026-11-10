@@ -540,6 +540,7 @@ private fun ProfileSheet(onOpen: (route: String) -> Unit = {}, onDismiss: () -> 
     // Opened in full: half-open, the sheet and its list both moved under the finger.
     androidx.compose.material3.ModalBottomSheet(onDismissRequest = onDismiss, containerColor = tone(0xFF282828),
         sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        com.music.spotui.ui.components.ConfigureSheetWindow()
         androidx.compose.foundation.layout.Column(
             modifier = Modifier.fillMaxWidth().then(Modifier.windowInsetsPadding(androidx.compose.foundation.layout.WindowInsets.navigationBars))
                 .verticalScroll(androidx.compose.foundation.rememberScrollState()).padding(bottom = 16.dp),

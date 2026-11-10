@@ -55,7 +55,7 @@ object Immersive {
         val bodyStrong = body.copy(fontWeight = FontWeight.SemiBold)
         val subhead = base.copy(fontSize = 14.sp, lineHeight = 19.sp, color = TextSecondary)
         val caption = base.copy(fontSize = 12.sp, lineHeight = 16.sp, color = TextSecondary)
-        val lyric = shown.copy(fontSize = 30.sp, lineHeight = 36.sp, fontWeight = FontWeight.Bold)
+        val lyric = shown.copy(fontSize = 35.sp, lineHeight = 40.sp, fontWeight = FontWeight.ExtraBold)
     }
     // The styles of the font in use, made again only when the font changes. Reading the font reads
     // its setting: a screen drawn with these styles redraws when it changes.
@@ -74,7 +74,7 @@ object Immersive {
     val Lyric: TextStyle get() = type().lyric
 
     // Spacing.
-    val Gutter = 20.dp
+    val Gutter = 12.dp
     val RowHeight = 60.dp
     /** Room the floating tab bar and mini player take at the bottom of every page. */
     val BottomChrome = 170.dp

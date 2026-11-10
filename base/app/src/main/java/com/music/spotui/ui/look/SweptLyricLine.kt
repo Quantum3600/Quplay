@@ -95,7 +95,7 @@ private val GLOW_RADIUS = 6.dp
  * inset so they still lay out identically, and the list gives the width back
  * by taking it off its own padding and row spacing.
  */
-val GLOW_ROOM = 10.dp
+val GLOW_ROOM = 18.dp
 
 /** Where a lyric line is in its own animation; see [SweptLyricLine]. */
 private const val PHASE_BEFORE = 0

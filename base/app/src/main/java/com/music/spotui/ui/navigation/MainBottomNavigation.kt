@@ -60,13 +60,16 @@ object TabReselect {
     // replay = 0 + a one-slot buffer: a tap is never held back, and a tap that lands while
     // the screen is not composed is simply dropped rather than replayed on the next visit.
     private val _home = kotlinx.coroutines.flow.MutableSharedFlow<Unit>(
-        extraBufferCapacity = 1, onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST,
+        extraBufferCapacity = 1,
+        onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST,
     )
     private val _library = kotlinx.coroutines.flow.MutableSharedFlow<Unit>(
-        extraBufferCapacity = 1, onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST,
+        extraBufferCapacity = 1,
+        onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST,
     )
     private val _search = kotlinx.coroutines.flow.MutableSharedFlow<Unit>(
-        extraBufferCapacity = 1, onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST,
+        extraBufferCapacity = 1,
+        onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST,
     )
 
     val home: kotlinx.coroutines.flow.SharedFlow<Unit> = _home
@@ -103,15 +106,19 @@ fun MainBottomNavigation(navController: NavHostController) {
                     .fillMaxWidth()
                     // Settings, Display: the fade over the list (the default), or solid black (from #15).
                     .then(
-                        if (com.music.spotui.data.preferences.SolidNavBar.on) Modifier.background(AppShade)
+                        if (com.music.spotui.data.preferences.SolidNavBar.on) Modifier.background(
+                            AppShade
+                        )
                         // Like the official bar: clear above the mini player, near-opaque by the tab icons,
                         // so covers scrolling underneath never compete with the labels.
-                        else Modifier.background(Brush.verticalGradient(
-                            0f to Color.Transparent,
-                            0.3f to AppShade.copy(alpha = 0.7f),
-                            0.6f to AppShade.copy(alpha = 0.92f),
-                            1f to AppShade,
-                        ))
+                        else Modifier.background(
+                            Brush.verticalGradient(
+                                0f to Color.Transparent,
+                                0.3f to AppShade.copy(alpha = 0.7f),
+                                0.6f to AppShade.copy(alpha = 0.92f),
+                                1f to AppShade,
+                            )
+                        )
                     )
             ) {
 
@@ -124,7 +131,11 @@ fun MainBottomNavigation(navController: NavHostController) {
                         content = {
                             // Large windows: a capped, centred capsule, not a bar across a desktop window.
                             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                Box(if (com.music.spotui.ui.components.windowSize().large) Modifier.widthIn(max = com.music.spotui.ui.components.WindowSize.MaxMiniPlayerWidth) else Modifier) {
+                                Box(
+                                    if (com.music.spotui.ui.components.windowSize().large) Modifier.widthIn(
+                                        max = com.music.spotui.ui.components.WindowSize.MaxMiniPlayerWidth
+                                    ) else Modifier
+                                ) {
                                     MiniPlayer()
                                 }
                             }
@@ -137,32 +148,26 @@ fun MainBottomNavigation(navController: NavHostController) {
                     val tabs = rememberTabNavigation(navController)
                     // Large windows: the tabs are in the rail at the side (MainNavigationRail).
                     if (!com.music.spotui.ui.components.windowSize().large) {
-                    // Official bar proportions: a 58 dp strip (the gesture inset is added by
-                    // navigationBarsPadding above), equal shares edge to edge, so the
-                    // tabs spread over the full width instead of clustering in the middle.
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(NavBarHeight),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        TabItems.forEach { item ->
-                            NavBarTab(
-                                iconRes = item.icon,
-                                label = if (item.labelRes != 0) stringResource(item.labelRes) else item.label,
-                                selected = tabs.selected == item.route,
-                                onClick = { tabs.open(item) },
-                            )
+                        // Official bar proportions: a 58 dp strip (the gesture inset is added by
+                        // navigationBarsPadding above), equal shares edge to edge, so the
+                        // tabs spread over the full width instead of clustering in the middle.
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(NavBarHeight),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            TabItems.forEach { item ->
+                                NavBarTab(
+                                    iconRes = item.icon,
+                                    label = if (item.labelRes != 0) stringResource(item.labelRes) else item.label,
+                                    selected = tabs.selected == item.route,
+                                    onClick = { tabs.open(item) },
+                                )
+                            }
                         }
                     }
-                    }
-
-
-
                 }
-
-
-
             }
         }
     )
@@ -172,13 +177,19 @@ fun MainBottomNavigation(navController: NavHostController) {
 /** The tabs, in the order an extension's look sets (`ui.order.nav`) or the app's own. */
 private val TabItems: List<Routes>
     get() {
-        val tabs = mapOf("home" to Routes.Home, "search" to Routes.Search, "library" to Routes.Library)
-        return com.music.spotui.extensions.ExtensionLook.navOrder?.mapNotNull { tabs[it] }?.takeIf { it.size == tabs.size }
+        val tabs =
+            mapOf("home" to Routes.Home, "search" to Routes.Search, "library" to Routes.Library)
+        return com.music.spotui.extensions.ExtensionLook.navOrder?.mapNotNull { tabs[it] }
+            ?.takeIf { it.size == tabs.size }
             ?: listOf(Routes.Home, Routes.Search, Routes.Library)
     }
 
 /** The tab shown (also on its sub-pages) and what a tap on a tab does; shared by the bar and the rail. */
-private class TabNavigation(private val navController: NavHostController, private val state: androidx.compose.runtime.MutableState<String>, private val currentRoute: String?) {
+private class TabNavigation(
+    private val navController: NavHostController,
+    private val state: androidx.compose.runtime.MutableState<String>,
+    private val currentRoute: String?
+) {
     val selected: String get() = state.value
 
     fun open(item: Routes) {
@@ -211,7 +222,9 @@ private fun rememberTabNavigation(navController: NavHostController): TabNavigati
     val navStack by navController.currentBackStackEntryAsState()
     val currentRoute = navStack?.destination?.route
     // The tab the user is in, even on one of its sub-pages (album, artist…).
-    val selectedTab = androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(Routes.Home.route) }
+    val selectedTab = androidx.compose.runtime.saveable.rememberSaveable {
+        androidx.compose.runtime.mutableStateOf(Routes.Home.route)
+    }
     if (currentRoute in TabItems.map { it.route }) selectedTab.value = currentRoute!!
     return TabNavigation(navController, selectedTab, currentRoute)
 }
@@ -237,7 +250,9 @@ fun MainNavigationRail(navController: NavHostController) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         TabItems.forEach { item ->
-            Row(Modifier.fillMaxWidth().height(72.dp)) {
+            Row(Modifier
+                .fillMaxWidth()
+                .height(72.dp)) {
                 NavBarTab(
                     iconRes = item.icon,
                     label = if (item.labelRes != 0) stringResource(item.labelRes) else item.label,
@@ -301,7 +316,11 @@ private fun RowScope.NavBarTab(
                 letterSpacing = 0.2.sp,
                 maxLines = 1,
                 // Four tabs: a long label (Bibliothèque, with large text) shrinks a little instead of being cut.
-                autoSize = androidx.compose.foundation.text.TextAutoSize.StepBased(minFontSize = 8.sp, maxFontSize = 11.sp, stepSize = 0.5.sp),
+                autoSize = androidx.compose.foundation.text.TextAutoSize.StepBased(
+                    minFontSize = 8.sp,
+                    maxFontSize = 11.sp,
+                    stepSize = 0.5.sp
+                ),
             )
         }
     }

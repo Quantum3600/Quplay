@@ -55,6 +55,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -69,6 +70,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LibraryMusic
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
@@ -97,14 +104,16 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.music.spotui.ui.theme.SpotuiTheme
 import kotlin.math.roundToInt
 
 /** Hoisted so the default is one stable lambda rather than a new one per call. */
-private val DefaultTabBarContentModifier: @Composable () -> Modifier = { Modifier }
+private val DefaultTabBarContentModifier: @Composable (InteractionSource?) -> Modifier = { Modifier }
 
 /**
  * The spring the selection glyphs travel on.
@@ -122,8 +131,8 @@ private val GlassSpring = com.music.spotui.ui.immersive.motion.ImmersiveMotion.g
  * standalone one — with the standalone tab selected the pill is hidden)
  * @param modifier the modifier to be applied to the tab bar
  * @param tabBarContentModifier surface of the tab pill and of the standalone tab, applied after the
- * default styling (background, clip) but before any content padding. A factory so each surface gets
- * its own instance.
+ * default styling (background, clip) but before any content padding. A factory receiving an optional
+ * interaction source so each surface gets its own instance and press reaction.
  * @param reduceMotion every move lands at once, with no lift
  * @param contentKey optional key that when changed retriggers the content lambda
  * @param content the content defining the tabs
@@ -132,7 +141,7 @@ private val GlassSpring = com.music.spotui.ui.immersive.motion.ImmersiveMotion.g
 internal fun FloatingTabBar(
     selectedTabKey: Any?,
     modifier: Modifier = Modifier,
-    tabBarContentModifier: @Composable () -> Modifier = DefaultTabBarContentModifier,
+    tabBarContentModifier: @Composable (InteractionSource?) -> Modifier = DefaultTabBarContentModifier,
     colors: FloatingTabBarColors = FloatingTabBarDefaults.colors(),
     shapes: FloatingTabBarShapes = FloatingTabBarDefaults.shapes(),
     sizes: FloatingTabBarSizes = FloatingTabBarDefaults.sizes(),
@@ -168,8 +177,10 @@ internal fun FloatingTabBar(
         if (standaloneTab != null) {
             ExpandedStandaloneTab(
                 standaloneTab = standaloneTab,
+                selectedTabKey = selectedTabKey,
                 shapes = shapes,
                 colors = colors,
+                reduceMotion = reduceMotion,
                 tabBarContentModifier = tabBarContentModifier,
                 modifier = Modifier
                     .fillMaxHeight()
@@ -220,7 +231,7 @@ private fun ExpandedTabs(
     colors: FloatingTabBarColors,
     reduceMotion: Boolean,
     modifier: Modifier,
-    tabBarContentModifier: @Composable () -> Modifier,
+    tabBarContentModifier: @Composable (InteractionSource?) -> Modifier,
 ) {
     val selectedTabIndex = scope.tabs.indexOfFirst { it.key == selectedTabKey }
     val currentSelectedTabIndex by rememberUpdatedState(selectedTabIndex)
@@ -305,7 +316,7 @@ private fun ExpandedTabs(
                 // No clip() ahead of the glass: it clips itself (as the mini player's does), and a
                 // clipping layer around the glass's own offscreen effect layer is what differs
                 // from the surface that renders correctly.
-                .then(tabBarContentModifier())
+                .then(tabBarContentModifier(null))
                 .padding(contentPadding),
         ) {
             if (showPill && (!glassPill || pill.isFlat)) {
@@ -434,22 +445,43 @@ private fun ExpandedTabs(
 @Composable
 private fun ExpandedStandaloneTab(
     standaloneTab: FloatingTabBarTab,
+    selectedTabKey: Any?,
     shapes: FloatingTabBarShapes,
     colors: FloatingTabBarColors,
+    reduceMotion: Boolean,
     modifier: Modifier,
-    tabBarContentModifier: @Composable () -> Modifier,
+    tabBarContentModifier: @Composable (InteractionSource?) -> Modifier,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isSelected = standaloneTab.key == selectedTabKey
+    val selectionSpec: AnimationSpec<Float> = if (reduceMotion) snap() else GlassSpring
+
+    val iconScale by animateFloatAsState(
+        targetValue = if (isSelected) 1.08f else 1f,
+        animationSpec = selectionSpec,
+        label = "standaloneTabIconScale",
+    )
+
     Tab(
-        icon = standaloneTab.icon,
+        icon = {
+            Box(
+                Modifier.graphicsLayer {
+                    scaleX = iconScale
+                    scaleY = iconScale
+                },
+            ) {
+                standaloneTab.icon()
+            }
+        },
         title = standaloneTab.title,
         isStandalone = true,
         modifier = modifier
             .background(colors.backgroundColor, shapes.standaloneTabShape)
-            .then(tabBarContentModifier())
+            .then(tabBarContentModifier(interactionSource))
             .clickable(
                 onClick = standaloneTab.onClick,
                 indication = null,
-                interactionSource = remember { MutableInteractionSource() },
+                interactionSource = interactionSource,
             ),
     )
 }
@@ -584,4 +616,34 @@ internal object FloatingTabBarDefaults {
         componentSpacing = componentSpacing,
         tabSpacing = tabSpacing,
     )
+}
+
+@Preview
+@Composable
+private fun FloatingTabBarPreview() {
+    SpotuiTheme {
+        var selectedTabKey by remember { mutableStateOf<Any>("home") }
+        FloatingTabBar(
+            selectedTabKey = selectedTabKey,
+            contentKey = selectedTabKey,
+        ) {
+            tab(
+                key = "home",
+                title = { Text("Home") },
+                icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
+                onClick = { selectedTabKey = "home" },
+            )
+            tab(
+                key = "library",
+                title = { Text("Library") },
+                icon = { Icon(Icons.Filled.LibraryMusic, contentDescription = "Library") },
+                onClick = { selectedTabKey = "library" },
+            )
+            standaloneTab(
+                key = "search",
+                icon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
+                onClick = { selectedTabKey = "search" },
+            )
+        }
+    }
 }

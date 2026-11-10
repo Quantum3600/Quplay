@@ -126,6 +126,7 @@ import com.music.spotui.ui.viewmodel.LyricsViewModel
 import app.myspoti.engine.R
 import kotlinx.coroutines.delay
 import java.util.Locale
+import androidx.compose.ui.platform.LocalLocale
 
 /**
  * Spotify's lyrics, as the official Android app shows them: the lyrics card in the
@@ -495,7 +496,7 @@ fun LyricsScreen(
     val playing = com.music.spotui.di.Graph.currentSongState.playingState.value
     val position = rememberPosition(playing)
     KeepScreenOnForLyrics(playing && lyrics != null)
-    val targetLanguage = getLyricTranslateLang(context).ifBlank { Locale.getDefault().language.ifBlank { "en" } }
+    val targetLanguage = getLyricTranslateLang(context).ifBlank { LocalLocale.current.platformLocale.language.ifBlank { "en" } }
     var menu by remember { mutableStateOf(false) }
     var sourcesOpen by remember { mutableStateOf(false) }
     // Lines picked to share: a long press on a line, or "Share lyrics" in the menu, starts it.

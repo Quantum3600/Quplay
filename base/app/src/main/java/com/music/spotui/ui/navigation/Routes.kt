@@ -10,9 +10,9 @@ sealed class Routes(
     /** Official label (per system language) for the bottom navigation, 0 = none. */
     @androidx.annotation.StringRes val labelRes: Int = 0,
 ) {
-    object Home : Routes(icon = R.drawable.ic_home_filled, label = "Accueil", route = "home", labelRes = R.string.navigationbar_musicappitems_home_title)
-    object Search : Routes(icon = R.drawable.ic_search_big, label = "Rechercher", route = "search", labelRes = R.string.navigationbar_musicappitems_search_title)
-    object Library : Routes(icon = R.drawable.ic_library_big, label = "Bibliothèque", route = "library", labelRes = R.string.navigationbar_musicappitems_yourlibrary_title)
+    object Home : Routes(icon = R.drawable.hugeicons__home_09, label = "Accueil", route = "home", labelRes = R.string.navigationbar_musicappitems_home_title)
+    object Search : Routes(icon = R.drawable.flowbite__search_outline, label = "Rechercher", route = "search", labelRes = R.string.navigationbar_musicappitems_search_title)
+    object Library : Routes(icon = R.drawable.solar__music_library_2_bold, label = "Bibliothèque", route = "library", labelRes = R.string.navigationbar_musicappitems_yourlibrary_title)
     object Album : Routes(0, "Album", "album")
     object Player : Routes(0, "Player", "player")
     object Artist : Routes(0, "Artist", "artist")

@@ -197,8 +197,10 @@ internal fun TabBarContent(
     val pillShape = remember { RoundedCornerShape(percent = 50) }
     val reduceMotion = rememberReduceMotion()
 
-    // A factory, not a value: each of the two surfaces gets its own glass modifier.
-    val glassSurface: @Composable () -> Modifier = { Modifier.immersiveGlassSurface(pillShape) }
+    // A factory, not a value: each of the two surfaces gets its own glass modifier and press interaction.
+    val glassSurface: @Composable (androidx.compose.foundation.interaction.InteractionSource?) -> Modifier = { interactionSource ->
+        Modifier.immersiveGlassSurface(pillShape, interactionSource = interactionSource)
+    }
 
     Box(modifier = modifier, contentAlignment = Alignment.BottomCenter) {
         FloatingTabBar(

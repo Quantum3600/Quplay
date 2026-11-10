@@ -71,7 +71,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.structuralEqualityPolicy
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
@@ -130,6 +129,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.FormatQuote
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Icon
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.Layout
@@ -224,10 +224,10 @@ fun ImmersiveLyricsPanel(modifier: Modifier = Modifier, contentPadding: PaddingV
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier
-                                .align(Alignment.TopEnd)
+                                .align(Alignment.BottomStart)
                                 .padding(
-                                    top = contentPadding.calculateTopPadding(),
-                                    end = Immersive.Gutter + contentPadding.calculateEndPadding(layoutDirection),
+                                    bottom = contentPadding.calculateBottomPadding(),
+                                    start = Immersive.Gutter + contentPadding.calculateStartPadding(layoutDirection),
                                 ),
                         ) {
                             if (canRomanize) LyricsToggle(
@@ -587,7 +587,7 @@ private fun LyricsList(
         contentPadding = PaddingValues(
             start = (Immersive.Gutter + contentPadding.calculateStartPadding(layoutDirection) - GLOW_ROOM)
                 .coerceAtLeast(0.dp),
-            top = contentPadding.calculateTopPadding() + 40.dp - GLOW_ROOM,
+            top = contentPadding.calculateTopPadding() + 45.dp - GLOW_ROOM,
             end = (Immersive.Gutter + contentPadding.calculateEndPadding(layoutDirection) - GLOW_ROOM)
                 .coerceAtLeast(0.dp),
             bottom = contentPadding.calculateBottomPadding() +
@@ -675,7 +675,7 @@ private fun PanelRow(
     onSeek: (Long) -> Unit,
 ) {
     if (!synced && row.isGap) {
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(18.dp))
         return
     }
 
@@ -858,7 +858,7 @@ private fun PanelRow(
                     text = romanized,
                     style = secondaryStyle(ROMANIZATION_STYLE, lane),
                     color = Immersive.TextSecondary,
-                    modifier = Modifier.fillMaxWidth().padding(start = GLOW_ROOM, end = GLOW_ROOM, bottom = if (translation != null) 10.dp else GLOW_ROOM),
+                    modifier = Modifier.fillMaxWidth().padding(start = GLOW_ROOM, end = GLOW_ROOM, bottom = if (translation != null) 8.dp else GLOW_ROOM),
                 )
             }
             if (translation != null) {
@@ -866,7 +866,7 @@ private fun PanelRow(
                     text = translation,
                     style = secondaryStyle(TRANSLATION_STYLE, lane),
                     color = Immersive.TextSecondary,
-                    modifier = Modifier.fillMaxWidth().padding(start = GLOW_ROOM, end = GLOW_ROOM, bottom = GLOW_ROOM),
+                    modifier = Modifier.fillMaxWidth().padding(start = GLOW_ROOM, end = GLOW_ROOM, bottom = GLOW_ROOM - 8.dp),
                 )
             }
         }

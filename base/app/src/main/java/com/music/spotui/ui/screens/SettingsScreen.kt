@@ -840,6 +840,7 @@ private fun LanguageRow() {
         onDismissRequest = { picking = false },
         containerColor = tone(0xFF282828),
     ) {
+        com.music.spotui.ui.components.ConfigureSheetWindow()
         androidx.compose.foundation.lazy.LazyColumn(Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
             item {
                 Text(stringResource(R.string.settings_item_app_language_title), color = AppText, fontSize = 18.sp,
@@ -896,6 +897,7 @@ private fun LyricsTranslationRow() {
         onDismissRequest = { picking = false },
         containerColor = tone(0xFF282828),
     ) {
+        com.music.spotui.ui.components.ConfigureSheetWindow()
         androidx.compose.foundation.lazy.LazyColumn(Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
             item {
                 Text(stringResource(R.string.lyrics_translation_title), color = AppText, fontSize = 18.sp,

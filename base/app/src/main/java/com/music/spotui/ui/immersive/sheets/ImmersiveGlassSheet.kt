@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.music.spotui.ui.components.ConfigureSheetWindow
 import com.music.spotui.ui.immersive.Immersive
 import com.music.spotui.ui.immersive.components.rememberImmersiveOverscrollFactory
 import com.music.spotui.ui.immersive.shell.immersiveGlassSurface
@@ -46,6 +47,7 @@ fun ImmersiveGlassSheet(
         dragHandle = null,
         contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
     ) {
+        ConfigureSheetWindow()
         CompositionLocalProvider(LocalOverscrollFactory provides rememberImmersiveOverscrollFactory()) {
             Column(Modifier.fillMaxWidth().immersiveGlassSurface(ImmersiveSheetShape)) {
                 Box(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 6.dp), contentAlignment = Alignment.Center) {

@@ -401,7 +401,12 @@ fun ImmersivePlayer(
                             .graphicsLayer { alpha = panelAlpha() },
                         label = "playerPanel",
                     ) { shown ->
-                        val inset = PaddingValues(start = left, end = left, top = 12.dp, bottom = 12.dp)
+                        val inset = PaddingValues(
+                            start = (left - 12.dp).coerceAtLeast(0.dp),
+                            end = (left - 12.dp).coerceAtLeast(0.dp),
+                            top = 12.dp,
+                            bottom = 12.dp,
+                        )
                         when (shown) {
                             Panel.LYRICS -> ImmersiveLyricsPanel(Modifier.fillMaxSize(), inset)
                             Panel.QUEUE -> ImmersiveQueuePanel(Modifier.fillMaxSize(), inset)

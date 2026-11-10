@@ -229,7 +229,7 @@
     <string name="setup_battery_detail">Music keeps playing with the screen off</string>
     <string name="setup_enable">Allow</string>
     <string name="setup_continue">Continue</string>
-    <string name="setup_intro_title">How Myspoti works</string>
+    <string name="setup_intro_title">How Quplay works</string>
     <string name="setup_intro_subtitle">Three things to know before you start.</string>
     <string name="setup_intro_spotify_title">Spotify, without the ads</string>
     <string name="setup_intro_spotify_detail">Your account, playlists and likes, played by Spotify\'s own web player. Free accounts work too.</string>

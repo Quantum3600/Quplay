@@ -59,18 +59,20 @@ private fun spotifyColorScheme(accent: Color) = darkColorScheme(
 fun SpotuiTheme(
     content: @Composable () -> Unit
 ) {
-    val energy by app.myspoti.power.EnergySettings.state.collectAsStateWithLifecycle()
-    val policy = energy.policy
-    androidx.compose.runtime.LaunchedEffect(policy.videoMaxHeight, policy.allowBackgroundLookups) {
-        com.music.spotui.video.MusicVideoController.onEnergyPolicyChanged()
-    }
-    // A new wallpaper recreates the activity: its accent is read again (Material You, see DynamicColorPref).
-    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
-    androidx.compose.runtime.remember(configuration) { com.music.spotui.data.preferences.DynamicColorPref.refresh() }
-    // Dark only, like Spotify: a saved choice from the withdrawn light palette is ignored.
-    val visualScheme: ColorScheme = spotifyColorScheme(AppAccent)
     val view = LocalView.current
     if (!view.isInEditMode) {
+        val energy by app.myspoti.power.EnergySettings.state.collectAsStateWithLifecycle()
+        val policy = energy.policy
+        androidx.compose.runtime.LaunchedEffect(policy.videoMaxHeight, policy.allowBackgroundLookups) {
+            com.music.spotui.video.MusicVideoController.onEnergyPolicyChanged()
+        }
+        // A new wallpaper recreates the activity: its accent is read again (Material You, see DynamicColorPref).
+        val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+        androidx.compose.runtime.remember(configuration) {
+            com.music.spotui.data.preferences.DynamicColorPref.refresh()
+            true
+        }
+
         SideEffect {
             val window = (view.context as Activity).window
             window.attributes = window.attributes.apply { preferredRefreshRate = policy.displayRefreshCap }
@@ -88,6 +90,8 @@ fun SpotuiTheme(
             window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(AppBackground.toArgb()))
         }
     }
+    // Dark only, like Spotify: a saved choice from the withdrawn light palette is ignored.
+    val visualScheme: ColorScheme = spotifyColorScheme(AppAccent)
 
     MaterialTheme(
         colorScheme = visualScheme,

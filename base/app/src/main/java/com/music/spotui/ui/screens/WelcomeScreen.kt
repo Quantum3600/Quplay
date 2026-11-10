@@ -96,7 +96,7 @@ fun WelcomeScreen(onLogin: () -> Unit) {
                     painter = painterResource(R.drawable.ic_launcher_foreground),
                     contentDescription = null,
                     modifier = Modifier
-                        .size(120.dp)
+                        .size(180.dp)
                         .graphicsLayer {
                             val v = parts[0].value
                             alpha = v
@@ -107,7 +107,7 @@ fun WelcomeScreen(onLogin: () -> Unit) {
                         .background(tone(0xFF181818)),
                 )
                 Spacer(Modifier.height(28.dp))
-                Text("Myspoti", color = AppText, fontFamily = AppSans, fontWeight = FontWeight.ExtraBold, fontSize = 40.sp,
+                Text("Quplay", color = AppText, fontFamily = AppSans, fontWeight = FontWeight.ExtraBold, fontSize = 40.sp,
                     modifier = Modifier.rise(1))
                 Spacer(Modifier.height(12.dp))
                 Box(Modifier.rise(2)) { Features() }

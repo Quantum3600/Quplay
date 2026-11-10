@@ -155,6 +155,7 @@ fun SongOptionsSheet(
         sheetState = sheetState,
         containerColor = MenuSheetColor,
     ) {
+        ConfigureSheetWindow()
         Column(modifier = Modifier.navigationBarsPadding().verticalScroll(rememberScrollState())) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
