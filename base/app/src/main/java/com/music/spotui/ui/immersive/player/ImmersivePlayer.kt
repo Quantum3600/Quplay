@@ -14,15 +14,29 @@
 package com.music.spotui.ui.immersive.player
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.music.spotui.ui.navigation.PlayerSheet
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -96,6 +110,7 @@ import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.offset
@@ -122,6 +137,7 @@ import com.music.spotui.ui.components.titleMarquee
 import com.music.spotui.ui.look.rememberArtworkColors
 import com.music.spotui.ui.look.rememberPauseScale
 import kotlin.math.abs
+import kotlin.time.Duration.Companion.milliseconds
 
 // Sizes and gaps of the portrait layout, as the player this follows has them.
 private val THUMB_SIZE = 54.dp
@@ -132,6 +148,7 @@ private val ART_TITLE_GAP = 20.dp
 private val ART_BOX_TOP_PAD = 8.dp
 private val DISMISS_STRIP_HEIGHT = 32.dp
 
+private val CONTROL_DELAY = 4000L.milliseconds
 /** The player's side margin. Scrollable panels reach back across it. */
 internal val PLAYER_GUTTER = 30.dp
 
@@ -269,6 +286,80 @@ fun ImmersivePlayer(
     var showNerd by remember { mutableStateOf(false) }
     val lyricsOpen = panel == Panel.LYRICS
     val queueOpen = panel == Panel.QUEUE
+    var bottomControlsVisible by remember { mutableStateOf(true) }
+    val controlsShown = panel == Panel.NONE || bottomControlsVisible
+    val controlsScope = rememberCoroutineScope()
+    var hideControlsJob by remember { mutableStateOf<Job?>(null) }
+
+    fun scheduleAutoHide() {
+        hideControlsJob?.cancel()
+        if (panel != Panel.NONE && bottomControlsVisible) {
+            hideControlsJob = controlsScope.launch {
+                delay(CONTROL_DELAY)
+                if (panel != Panel.NONE) {
+                    bottomControlsVisible = false
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(panel, bottomControlsVisible) {
+        if (panel != Panel.NONE && bottomControlsVisible) {
+            scheduleAutoHide()
+        } else {
+            hideControlsJob?.cancel()
+        }
+    }
+
+    val controlsScrollConnection = remember(panel) {
+        object : NestedScrollConnection {
+            private var accumulatedY = 0f
+
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (panel != Panel.NONE && (source == NestedScrollSource.UserInput || source == NestedScrollSource.SideEffect)) {
+                    if (abs(available.y) > abs(available.x)) {
+                        if (available.y < 0f) {
+                            if (accumulatedY > 0f) accumulatedY = 0f
+                            accumulatedY += available.y
+                            if (accumulatedY < -20f && bottomControlsVisible) {
+                                hideControlsJob?.cancel()
+                                bottomControlsVisible = false
+                                accumulatedY = 0f
+                            }
+                        } else if (available.y > 0f) {
+                            if (accumulatedY < 0f) accumulatedY = 0f
+                            accumulatedY += available.y
+                            // Require a larger scroll down offset distance (~90dp / 240px) to reveal controls
+                            if (accumulatedY > 1000f && !bottomControlsVisible) {
+                                bottomControlsVisible = true
+                                accumulatedY = 0f
+                                scheduleAutoHide()
+                            } else if (bottomControlsVisible) {
+                                scheduleAutoHide()
+                            }
+                        }
+                    }
+                }
+                return Offset.Zero
+            }
+
+            override suspend fun onPreFling(available: Velocity): Velocity {
+                if (panel != Panel.NONE) {
+                    // Fast scroll down (fling down velocity > 500px/s) reveals controls
+                    if (available.y > 500f && !bottomControlsVisible) {
+                        bottomControlsVisible = true
+                        accumulatedY = 0f
+                        scheduleAutoHide()
+                    } else if (available.y < -300f && bottomControlsVisible) {
+                        hideControlsJob?.cancel()
+                        bottomControlsVisible = false
+                        accumulatedY = 0f
+                    }
+                }
+                return Velocity.Zero
+            }
+        }
+    }
 
     // 0 with the full player, 1 with the cover in the header. Read at measure, placement and draw.
     val collapse = animateFloatAsState(
@@ -368,7 +459,41 @@ fun ImmersivePlayer(
 
                 // Everything that changes between the full player and the panels lives in this
                 // one weighted box, so the controls below it never move.
-                BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+                BoxWithConstraints(
+                    Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .nestedScroll(controlsScrollConnection)
+                        .pointerInput(panel) {
+                            if (panel == Panel.NONE) return@pointerInput
+                            val touchSlop = viewConfiguration.touchSlop
+                            awaitEachGesture {
+                                val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                                if (bottomControlsVisible) hideControlsJob?.cancel()
+                                var totalDragY = 0f
+                                var totalDragX = 0f
+                                var isDrag = false
+                                while (true) {
+                                    val event = awaitPointerEvent(pass = PointerEventPass.Initial)
+                                    val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                                    if (!change.pressed) {
+                                        if (!isDrag && !bottomControlsVisible) {
+                                            bottomControlsVisible = true
+                                        }
+                                        if (bottomControlsVisible) scheduleAutoHide()
+                                        break
+                                    }
+                                    val deltaX = change.position.x - change.previousPosition.x
+                                    val deltaY = change.position.y - change.previousPosition.y
+                                    totalDragX += deltaX
+                                    totalDragY += deltaY
+                                    if (abs(totalDragY) > touchSlop || abs(totalDragX) > touchSlop) {
+                                        isDrag = true
+                                    }
+                                }
+                            }
+                        },
+                ) {
                     val contentWidth = minOf(maxWidth - PLAYER_GUTTER * 2, PLAYER_MAX_WIDTH)
                     val left = (maxWidth - contentWidth) / 2
                     val fullArt = minOf(contentWidth, maxHeight - ART_BOX_TOP_PAD - ART_TITLE_GAP - HEADER_HEIGHT - 16.dp)
@@ -494,22 +619,54 @@ fun ImmersivePlayer(
                 }
 
                 // ---- Bottom: scrubber, transport, volume, toggles ----
-                // One block, measured at its natural height and pinned to the foot of the player.
-                Column(
+                // Disappears a few seconds after swiped up in lyrics or queue; reappears on swipe down, tap, or exit.
+                AnimatedVisibility(
+                    visible = controlsShown,
+                    enter = slideInVertically(
+                        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
+                        initialOffsetY = { it },
+                    ) + fadeIn(animationSpec = tween(durationMillis = 250)),
+                    exit = slideOutVertically(
+                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing),
+                        targetOffsetY = { it },
+                    ) + fadeOut(animationSpec = tween(durationMillis = 400)),
                     modifier = Modifier
-                        .widthIn(max = PLAYER_MAX_WIDTH + PLAYER_GUTTER * 2)
                         .fillMaxWidth()
-                        .padding(horizontal = PLAYER_GUTTER)
                         .align(Alignment.CenterHorizontally),
                 ) {
-                    PlayerControlsBlock(
-                        state = state, actions = actions, volume = volume, lyricsOpen = lyricsOpen, queueOpen = queueOpen,
-                        showVolume = com.music.spotui.data.preferences.PlayerVolumePref.on,
-                        // Lyrics and the queue are two things to show in one place: opening one closes the other.
-                        onToggleLyrics = { panel = if (lyricsOpen) Panel.NONE else Panel.LYRICS },
-                        onToggleQueue = { panel = if (queueOpen) Panel.NONE else Panel.QUEUE },
-                        onOpenDevices = { showDevices = true },
-                    )
+                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Column(
+                            modifier = Modifier
+                                .widthIn(max = PLAYER_MAX_WIDTH + PLAYER_GUTTER * 2)
+                                .fillMaxWidth()
+                                .padding(horizontal = PLAYER_GUTTER)
+                                .pointerInput(panel) {
+                                    if (panel == Panel.NONE) return@pointerInput
+                                    awaitEachGesture {
+                                        awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                                        hideControlsJob?.cancel()
+                                        while (true) {
+                                            val event = awaitPointerEvent(pass = PointerEventPass.Initial)
+                                            if (event.changes.any { it.pressed }) {
+                                                hideControlsJob?.cancel()
+                                            } else {
+                                                scheduleAutoHide()
+                                                break
+                                            }
+                                        }
+                                    }
+                                },
+                        ) {
+                            PlayerControlsBlock(
+                                state = state, actions = actions, volume = volume, lyricsOpen = lyricsOpen, queueOpen = queueOpen,
+                                showVolume = com.music.spotui.data.preferences.PlayerVolumePref.on,
+                                // Lyrics and the queue are two things to show in one place: opening one closes the other.
+                                onToggleLyrics = { panel = if (lyricsOpen) Panel.NONE else Panel.LYRICS },
+                                onToggleQueue = { panel = if (queueOpen) Panel.NONE else Panel.QUEUE },
+                                onOpenDevices = { showDevices = true },
+                            )
+                        }
+                    }
                 }
             }
         }

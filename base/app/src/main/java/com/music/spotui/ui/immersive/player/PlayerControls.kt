@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.automirrored.rounded.VolumeDown
@@ -358,7 +359,7 @@ private fun BottomGlyph(
     highlighted: Boolean = false,
 ) {
     val bgAlpha by animateFloatAsState(
-        targetValue = if (highlighted) 0.24f else 0.10f,
+        targetValue = if (highlighted) 0.24f else 0f,
         animationSpec = tween(durationMillis = 180),
         label = "bottomGlyphBg",
     )
@@ -369,8 +370,8 @@ private fun BottomGlyph(
     )
     Box(
         modifier = Modifier
-            .size(BOTTOM_ACTION_SIZE)
-            .clip(CircleShape)
+            .size(BOTTOM_ACTION_SIZE + 32.dp, BOTTOM_ACTION_SIZE)
+            .clip(RoundedCornerShape(32.dp))
             .background(LocalPlayerTint.current.copy(alpha = bgAlpha))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
@@ -416,7 +417,7 @@ internal fun PlayerActionRow(
     val showListenOn = LocalInspectionMode.current || com.music.spotui.data.preferences.PlayerCapsulePref.shown
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         BottomGlyph(

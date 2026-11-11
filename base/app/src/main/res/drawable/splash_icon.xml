@@ -2,4 +2,4 @@
 <!-- Launch screen mark: the launcher wave, smaller and centred. -->
 <inset xmlns:android="http://schemas.android.com/apk/res/android"
     android:drawable="@drawable/ic_launcher_foreground"
-    android:inset="22%" />
+    android:inset="15%" />

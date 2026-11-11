@@ -19,7 +19,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -98,9 +97,14 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import com.music.spotui.di.SongPlayer
+import android.app.Application
+import androidx.compose.foundation.layout.Arrangement
 import com.music.spotui.ui.components.RepeatIcons
 import com.music.spotui.ui.immersive.Immersive
 import com.music.spotui.ui.screens.ExplicitBadge
+import com.music.spotui.ui.theme.SpotuiTheme
+import androidx.compose.ui.tooling.preview.Preview
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * How a queue row moves when the running order changes under it.
@@ -165,7 +169,7 @@ fun ImmersiveQueuePanel(modifier: Modifier = Modifier, contentPadding: PaddingVa
     // Limits by time alone: the engine may stay silent past either.
     LaunchedEffect(pending) {
         val p = pending ?: return@LaunchedEffect
-        delay(SLOW_REPORT_MS)
+        delay(SLOW_REPORT_MS.milliseconds)
         if (pending === p && !settling) Logbook.log("queue order: no report yet after ${SLOW_REPORT_MS}ms, kept")
         while (pending === p) {
             delay(250)
@@ -260,139 +264,157 @@ fun ImmersiveQueuePanel(modifier: Modifier = Modifier, contentPadding: PaddingVa
     }
 
     val startPad = Immersive.Gutter + contentPadding.calculateStartPadding(direction)
-    LazyColumn(
-        state = listState,
-        modifier = modifier
-            .onSizeChanged { gate.height = it.height.toFloat() }
-            .pointerInput(gate) {
-                // Where the finger is, seen before the rows take it (nothing is consumed).
-                awaitPointerEventScope {
-                    while (true) awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull()?.let { gate.y = it.position.y }
-                }
-            }
-            .nestedScroll(keepScroll)
-            .fadingEdges(),
-        contentPadding = PaddingValues(
-            start = startPad,
-            top = topPad,
-            end = Immersive.Gutter + contentPadding.calculateEndPadding(direction),
-            bottom = bottomPad,
-        ),
-    ) {
-        item(key = "header") {
-            QueueHeader(
-                shuffle = shuffle,
-                smart = smart,
-                repeatMode = repeatMode,
-                autoplay = autoplay,
-                onShuffle = {
-                    val ctx = SongPlayer.nowPlaying.value.contextUri
-                    when {
-                        SmartShuffle.on.value != null && SmartShuffle.on.value == ctx -> {
-                            SmartShuffle.on.value = null
-                            SongPlayer.setShuffle(false)
-                            song.shuffle.value = false
-                        }
-                        shuffle && SmartShuffle.canPlay(ctx) -> {
-                            SmartShuffle.on.value = ctx
-                            Toast.makeText(context, R.string.smart_shuffle_on, Toast.LENGTH_SHORT).show()
-                            scope.launch {
-                                if (!SmartShuffle.startFor(ctx, SongPlayer.currentTrackId)) {
-                                    SmartShuffle.on.value = null
-                                    Toast.makeText(context, R.string.page_load_failed, Toast.LENGTH_SHORT).show()
-                                }
+    Column(modifier.fillMaxSize()) {
+        QueueHeader(
+            shuffle = shuffle,
+            smart = smart,
+            repeatMode = repeatMode,
+            autoplay = autoplay,
+            onShuffle = {
+                val ctx = SongPlayer.nowPlaying.value.contextUri
+                when {
+                    SmartShuffle.on.value != null && SmartShuffle.on.value == ctx -> {
+                        SmartShuffle.on.value = null
+                        SongPlayer.setShuffle(false)
+                        song.shuffle.value = false
+                    }
+                    shuffle && SmartShuffle.canPlay(ctx) -> {
+                        SmartShuffle.on.value = ctx
+                        Toast.makeText(context, R.string.smart_shuffle_on, Toast.LENGTH_SHORT).show()
+                        scope.launch {
+                            if (!SmartShuffle.startFor(ctx, SongPlayer.currentTrackId)) {
+                                SmartShuffle.on.value = null
+                                Toast.makeText(context, R.string.page_load_failed, Toast.LENGTH_SHORT).show()
                             }
                         }
-                        else -> {
-                            val next = !shuffle
-                            SongPlayer.setShuffle(next)
-                            song.shuffle.value = next
-                        }
                     }
-                },
-                onRepeat = { SongPlayer.cycleRepeat() },
-                onAutoplay = {
-                    com.music.spotui.data.preferences.AutoplayPref.set(context, !autoplay)
-                },
-            )
-        }
-        if (hasCurrent) {
-            item(key = "heading-now") {
-                QueueHeading(
-                    title = stringResource(R.string.immersive_queue_now_playing),
-                    modifier = Modifier.padding(top = 12.dp, bottom = 6.dp).then(queueMotion()),
-                )
-            }
-            item(key = "now-playing") {
-                QueueRow(
-                    title = song.title.value.ifBlank { current?.title.orEmpty() },
-                    artist = song.singer.value.ifBlank { current?.singer.orEmpty() },
-                    cover = song.coverUri.value.ifBlank { current?.coverUri.orEmpty() },
-                    isCurrent = true,
-                    explicit = current?.explicit == true,
-                    onClick = {},
-                    modifier = queueMotion(),
-                )
-            }
-        }
-        // Not a place a row can go: the queued rows are under it.
-        if (queuedKeys.isNotEmpty()) {
-            item(key = "heading-queued") {
-                QueueHeading(
-                    title = stringResource(R.string.next_in_queue),
-                    modifier = Modifier.padding(top = 16.dp, bottom = 6.dp).then(queueMotion()),
-                ) {
-                    Text(
-                        text = stringResource(R.string.clear_queue),
-                        style = Immersive.Subhead,
-                        color = Immersive.TextSecondary,
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .clickable { SongPlayer.clearQueue() }
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                    )
+                    else -> {
+                        val next = !shuffle
+                        SongPlayer.setShuffle(next)
+                        song.shuffle.value = next
+                    }
                 }
-            }
-        }
-        // The queued rows, the context's heading and its rows: one list, so a row passing the
-        // heading only changes places with it (and so changes part). Autoplay's songs come under a
-        // heading of their own, a plain item: no Spotify song crosses it (QueueDragMath.swap).
-        val autoAt = autoplayStart(order, byKey)
-        val rowItem: @Composable LazyItemScope.(String) -> Unit = rowItem@{ k ->
-            if (k == HEADING_NEXT) {
-                // A place the dragged row swaps with (it then changes part), never dragged itself.
-                ReorderableItem(reorder, key = k, animateItemModifier = queueMotion()) {
+            },
+            onRepeat = { SongPlayer.cycleRepeat() },
+            onAutoplay = {
+                com.music.spotui.data.preferences.AutoplayPref.set(context, !autoplay)
+            },
+        )
+        LazyColumn(
+            state = listState,
+            modifier = modifier
+                .onSizeChanged { gate.height = it.height.toFloat() }
+                .pointerInput(gate) {
+                    // Where the finger is, seen before the rows take it (nothing is consumed).
+                    awaitPointerEventScope {
+                        while (true) awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull()
+                            ?.let { gate.y = it.position.y }
+                    }
+                }
+                .nestedScroll(keepScroll)
+                .fadingEdges(),
+            contentPadding = PaddingValues(
+                start = startPad,
+                top = topPad,
+                end = Immersive.Gutter + contentPadding.calculateEndPadding(direction),
+                bottom = bottomPad,
+            ),
+        ) {
+            if (hasCurrent) {
+                item(key = "heading-now") {
                     QueueHeading(
-                        title = if (contextName.isNotBlank()) stringResource(R.string.next_from, contextName) else stringResource(R.string.next_up),
-                        modifier = Modifier.padding(top = 16.dp, bottom = 6.dp),
+                        title = stringResource(R.string.immersive_queue_now_playing),
+                        modifier = Modifier
+                            .padding(top = 12.dp, bottom = 6.dp)
+                            .then(queueMotion()),
                     )
                 }
-                return@rowItem
+                item(key = "now-playing") {
+                    QueueRow(
+                        title = song.title.value.ifBlank { current?.title.orEmpty() },
+                        artist = song.singer.value.ifBlank { current?.singer.orEmpty() },
+                        cover = song.coverUri.value.ifBlank { current?.coverUri.orEmpty() },
+                        isCurrent = true,
+                        explicit = current?.explicit == true,
+                        onClick = {},
+                        modifier = queueMotion(),
+                    )
+                }
             }
-            val row = byKey[k] ?: return@rowItem
-            ReorderableItem(reorder, key = k, animateItemModifier = queueMotion()) { dragging ->
-                QueueEntry(row, removed, dragging, dimmed = reorder.isAnyItemDragging && !dragging,
-                    handle = Modifier.draggableHandle(onDragStarted = { onDragStarted(k) }, onDragStopped = { onDragStopped(k) }))
+            // Not a place a row can go: the queued rows are under it.
+            if (queuedKeys.isNotEmpty()) {
+                item(key = "heading-queued") {
+                    QueueHeading(
+                        title = stringResource(R.string.next_in_queue),
+                        modifier = Modifier
+                            .padding(top = 16.dp, bottom = 6.dp)
+                            .then(queueMotion()),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.clear_queue),
+                            style = Immersive.Subhead,
+                            color = Immersive.TextSecondary,
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .clickable { SongPlayer.clearQueue() }
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                        )
+                    }
+                }
             }
-        }
-        items(if (autoAt < 0) order else order.subList(0, autoAt), key = { it }) { k -> rowItem(k) }
-        if (autoAt >= 0) {
-            item(key = "heading-autoplay") {
-                QueueHeading(
-                    title = stringResource(R.string.queue_autoplay_heading),
-                    modifier = Modifier.padding(top = 16.dp, bottom = 6.dp).then(queueMotion()),
+            // The queued rows, the context's heading and its rows: one list, so a row passing the
+            // heading only changes places with it (and so changes part). Autoplay's songs come under a
+            // heading of their own, a plain item: no Spotify song crosses it (QueueDragMath.swap).
+            val autoAt = autoplayStart(order, byKey)
+            val rowItem: @Composable LazyItemScope.(String) -> Unit = rowItem@{ k ->
+                if (k == HEADING_NEXT) {
+                    // A place the dragged row swaps with (it then changes part), never dragged itself.
+                    ReorderableItem(reorder, key = k, animateItemModifier = queueMotion()) {
+                        QueueHeading(
+                            title = if (contextName.isNotBlank()) stringResource(
+                                R.string.next_from,
+                                contextName
+                            ) else stringResource(R.string.next_up),
+                            modifier = Modifier.padding(top = 16.dp, bottom = 6.dp),
+                        )
+                    }
+                    return@rowItem
+                }
+                val row = byKey[k] ?: return@rowItem
+                ReorderableItem(reorder, key = k, animateItemModifier = queueMotion()) { dragging ->
+                    QueueEntry(
+                        row, removed, dragging, dimmed = reorder.isAnyItemDragging && !dragging,
+                        handle = Modifier.draggableHandle(
+                            onDragStarted = { onDragStarted(k) },
+                            onDragStopped = { onDragStopped(k) })
+                    )
+                }
+            }
+            items(if (autoAt < 0) order else order.subList(0, autoAt), key = { it }) { k ->
+                rowItem(
+                    k
                 )
             }
-            items(order.subList(autoAt, order.size), key = { it }) { k -> rowItem(k) }
-        }
-        if (!hasCurrent && order.isEmpty()) {
-            item(key = "empty") {
-                Text(
-                    text = stringResource(R.string.immersive_queue_empty),
-                    style = Immersive.Body,
-                    color = Immersive.TextSecondary,
-                    modifier = Modifier.padding(top = 32.dp),
-                )
+            if (autoAt >= 0) {
+                item(key = "heading-autoplay") {
+                    QueueHeading(
+                        title = stringResource(R.string.queue_autoplay_heading),
+                        modifier = Modifier
+                            .padding(top = 16.dp, bottom = 6.dp)
+                            .then(queueMotion()),
+                    )
+                }
+                items(order.subList(autoAt, order.size), key = { it }) { k -> rowItem(k) }
+            }
+            if (!hasCurrent && order.isEmpty()) {
+                item(key = "empty") {
+                    Text(
+                        text = stringResource(R.string.immersive_queue_empty),
+                        style = Immersive.Body,
+                        color = Immersive.TextSecondary,
+                        modifier = Modifier.padding(top = 32.dp),
+                    )
+                }
             }
         }
     }
@@ -496,7 +518,9 @@ private fun QueueEntry(row: QRow, removed: SnapshotStateList<String>, dragging: 
             // through behind the drag handle.
             if (dismiss.dismissDirection != SwipeToDismissBoxValue.Settled) {
                 Box(
-                    Modifier.fillMaxSize().padding(end = 4.dp),
+                    Modifier
+                        .fillMaxSize()
+                        .padding(end = 4.dp),
                     contentAlignment = Alignment.CenterEnd,
                 ) {
                     Icon(
@@ -521,7 +545,9 @@ private fun QueueEntry(row: QRow, removed: SnapshotStateList<String>, dragging: 
                     Icons.Rounded.DragHandle,
                     contentDescription = stringResource(R.string.immersive_queue_reorder),
                     tint = Immersive.TextSecondary,
-                    modifier = handle.size(40.dp).padding(8.dp),
+                    modifier = handle
+                        .size(40.dp)
+                        .padding(8.dp),
                 )
             },
         )
@@ -542,7 +568,7 @@ private fun QueueHeader(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 6.dp),
-        horizontalArrangement = Arrangement.End,
+        horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         QueueToggle(
@@ -557,14 +583,12 @@ private fun QueueHeader(
             on = shuffle || smart,
             onClick = onShuffle,
         )
-        Spacer(Modifier.width(8.dp))
         QueueToggle(
             icon = when (repeatMode) { 2 -> Icons.Rounded.RepeatOne; 3 -> RepeatIcons.once; else -> Icons.Rounded.Repeat },
             description = stringResource(R.string.immersive_queue_repeat),
             on = repeatMode != 0,
             onClick = onRepeat,
         )
-        Spacer(Modifier.width(8.dp))
         QueueToggle(
             icon = Icons.Rounded.AllInclusive,
             description = stringResource(R.string.settings_autoplay_title),
@@ -580,9 +604,9 @@ private fun QueueToggle(icon: ImageVector, description: String, on: Boolean, onC
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .size(36.dp)
-            .clip(CircleShape)
-            .background(if (on) Color.White else Color.White.copy(alpha = 0.14f))
+            .size(108.dp, 40.dp)
+            .clip(RoundedCornerShape(32.dp))
+            .background(if (on) Color.White.copy(alpha = 0.8f) else Color.White.copy(alpha = 0.14f))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -596,7 +620,7 @@ private fun QueueToggle(icon: ImageVector, description: String, on: Boolean, onC
             animationSpec = tween(durationMillis = 180),
             label = "queueToggleIcon",
         ) { glyph ->
-            Icon(glyph, contentDescription = description, tint = if (on) Color.Black else Color.White, modifier = Modifier.size(20.dp))
+            Icon(glyph, contentDescription = description, tint = if (on) Color.Black else Color.White, modifier = Modifier.size(24.dp))
         }
     }
 }
@@ -684,5 +708,64 @@ private fun QueueRow(
                 modifier = Modifier.size(20.dp),
             )
         }
+    }
+}
+
+@Preview
+@Composable
+private fun ImmersiveQueuePanelPreview() {
+    val context = LocalContext.current
+    remember {
+        runCatching {
+            val dummyApp = context as? Application
+                ?: (context.applicationContext as? Application)
+                ?: object : Application() {
+                    init {
+                        attachBaseContext(context)
+                    }
+                }
+            Graph.init(dummyApp)
+        }
+        Graph.currentSongState.updateSongState(
+            coverUri = "",
+            title = "Midnight City",
+            singer = "M83",
+            playingState = true,
+            songId = 1,
+            songIndex = 0,
+            album = "Hurry Up, We're Dreaming",
+        )
+
+        val queuedItem = SongPlayer.QueueItem(
+            song = com.music.spotui.data.entity.SongsModel(
+                id = 2,
+                title = "Starboy",
+                album = "Starboy",
+                singer = "The Weeknd",
+                coverUri = "",
+                url = "spotify:track:2",
+            ),
+            uri = "spotify:track:2",
+            uid = "uid-2",
+            provider = "user",
+        )
+        val nextItem = SongPlayer.QueueItem(
+            song = com.music.spotui.data.entity.SongsModel(
+                id = 3,
+                title = "Blinding Lights",
+                album = "After Hours",
+                singer = "The Weeknd",
+                coverUri = "",
+                url = "spotify:track:3",
+            ),
+            uri = "spotify:track:3",
+            uid = "uid-3",
+            provider = "context",
+        )
+        SongPlayer.showQueueOrder(listOf(queuedItem), listOf(nextItem))
+        true
+    }
+    SpotuiTheme {
+        ImmersiveQueuePanel()
     }
 }
