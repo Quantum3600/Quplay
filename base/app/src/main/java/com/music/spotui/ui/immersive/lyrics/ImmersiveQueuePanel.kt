@@ -12,6 +12,7 @@
  */
 package com.music.spotui.ui.immersive.lyrics
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -37,6 +38,8 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AllInclusive
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.DragHandle
 import androidx.compose.material.icons.rounded.GraphicEq
@@ -55,6 +58,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.mutableStateListOf
@@ -63,10 +67,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import android.os.SystemClock
+import android.widget.Toast
 import app.myspoti.host.android.Logbook
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import com.music.spotui.ui.screens.SmartShuffle
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -122,11 +130,16 @@ private fun LazyItemScope.queueMotion(): Modifier =
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImmersiveQueuePanel(modifier: Modifier = Modifier, contentPadding: PaddingValues = PaddingValues()) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val queue by SongPlayer.engineQueue
     val song = Graph.currentSongState
     val shuffle = song.shuffle.value
     val repeatMode = SongPlayer.repeatMode.value
+    val autoplay = com.music.spotui.data.preferences.AutoplayPref.on
     val contextName = SongPlayer.nowPlaying.value.contextName
+    val contextUri = SongPlayer.nowPlaying.value.contextUri
+    val smart = SmartShuffle.on.value != null && SmartShuffle.on.value == contextUri
 
     // Rows swiped away, hidden at once: the queue takes a moment to report the removal.
     val removed = remember { mutableStateListOf<String>() }
@@ -269,12 +282,38 @@ fun ImmersiveQueuePanel(modifier: Modifier = Modifier, contentPadding: PaddingVa
         item(key = "header") {
             QueueHeader(
                 shuffle = shuffle,
+                smart = smart,
                 repeatMode = repeatMode,
+                autoplay = autoplay,
                 onShuffle = {
-                    SongPlayer.setShuffle(!shuffle)
-                    song.shuffle.value = !shuffle
+                    val ctx = SongPlayer.nowPlaying.value.contextUri
+                    when {
+                        SmartShuffle.on.value != null && SmartShuffle.on.value == ctx -> {
+                            SmartShuffle.on.value = null
+                            SongPlayer.setShuffle(false)
+                            song.shuffle.value = false
+                        }
+                        shuffle && SmartShuffle.canPlay(ctx) -> {
+                            SmartShuffle.on.value = ctx
+                            Toast.makeText(context, R.string.smart_shuffle_on, Toast.LENGTH_SHORT).show()
+                            scope.launch {
+                                if (!SmartShuffle.startFor(ctx, SongPlayer.currentTrackId)) {
+                                    SmartShuffle.on.value = null
+                                    Toast.makeText(context, R.string.page_load_failed, Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                        else -> {
+                            val next = !shuffle
+                            SongPlayer.setShuffle(next)
+                            song.shuffle.value = next
+                        }
+                    }
                 },
                 onRepeat = { SongPlayer.cycleRepeat() },
+                onAutoplay = {
+                    com.music.spotui.data.preferences.AutoplayPref.set(context, !autoplay)
+                },
             )
         }
         if (hasCurrent) {
@@ -492,23 +531,45 @@ private fun QueueEntry(row: QRow, removed: SnapshotStateList<String>, dragging: 
 @Composable
 private fun QueueHeader(
     shuffle: Boolean,
+    smart: Boolean,
     repeatMode: Int,
+    autoplay: Boolean,
     onShuffle: () -> Unit,
     onRepeat: () -> Unit,
+    onAutoplay: () -> Unit,
 ) {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            text = stringResource(R.string.immersive_queue_title),
-            style = Immersive.Title,
-            modifier = Modifier.weight(1f),
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 6.dp),
+        horizontalArrangement = Arrangement.End,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        QueueToggle(
+            icon = if (smart) Icons.Rounded.AutoAwesome else Icons.Rounded.Shuffle,
+            description = stringResource(
+                when {
+                    smart -> R.string.smart_shuffle_title
+                    shuffle -> R.string.immersive_player_shuffle_on
+                    else -> R.string.immersive_player_shuffle_off
+                },
+            ),
+            on = shuffle || smart,
+            onClick = onShuffle,
         )
-        QueueToggle(Icons.Rounded.Shuffle, stringResource(R.string.immersive_queue_shuffle), shuffle, onShuffle)
         Spacer(Modifier.width(8.dp))
         QueueToggle(
-            when (repeatMode) { 2 -> Icons.Rounded.RepeatOne; 3 -> RepeatIcons.once; else -> Icons.Rounded.Repeat },
-            stringResource(R.string.immersive_queue_repeat),
-            repeatMode != 0,
-            onRepeat,
+            icon = when (repeatMode) { 2 -> Icons.Rounded.RepeatOne; 3 -> RepeatIcons.once; else -> Icons.Rounded.Repeat },
+            description = stringResource(R.string.immersive_queue_repeat),
+            on = repeatMode != 0,
+            onClick = onRepeat,
+        )
+        Spacer(Modifier.width(8.dp))
+        QueueToggle(
+            icon = Icons.Rounded.AllInclusive,
+            description = stringResource(R.string.settings_autoplay_title),
+            on = autoplay,
+            onClick = onAutoplay,
         )
     }
 }
@@ -522,9 +583,21 @@ private fun QueueToggle(icon: ImageVector, description: String, on: Boolean, onC
             .size(36.dp)
             .clip(CircleShape)
             .background(if (on) Color.White else Color.White.copy(alpha = 0.14f))
-            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onClick),
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+            ) {
+                Haptics.click()
+                onClick()
+            },
     ) {
-        Icon(icon, contentDescription = description, tint = if (on) Color.Black else Color.White, modifier = Modifier.size(20.dp))
+        Crossfade(
+            targetState = icon,
+            animationSpec = tween(durationMillis = 180),
+            label = "queueToggleIcon",
+        ) { glyph ->
+            Icon(glyph, contentDescription = description, tint = if (on) Color.Black else Color.White, modifier = Modifier.size(20.dp))
+        }
     }
 }
 

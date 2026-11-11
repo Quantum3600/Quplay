@@ -569,8 +569,8 @@
     <string name="settings_player_lyrics_card_detail">La carte de paroles sous le lecteur. Désactivé, un glissement vers le haut sur la pochette ouvre toujours les paroles.</string>
     <string name="settings_player_source_title">Source et qualité dans le lecteur</string>
     <string name="settings_player_source_detail">La ligne qui dit ce qui joue et comment. Désactivée, Qualité du son et Stats for nerds sont dans le menu du lecteur.</string>
-    <string name="settings_player_capsule_title">Capsule dans le lecteur</string>
-    <string name="settings_player_capsule_detail">Les boutons en bas du lecteur. Désactivée, Écouter sur est dans le menu du lecteur.</string>
+    <string name="settings_player_capsule_title">« Écouter sur » dans le lecteur</string>
+    <string name="settings_player_capsule_detail">Le bouton « Écouter sur » en bas du lecteur. Désactivé, Écouter sur est dans le menu du lecteur.</string>
     <string name="settings_search">Rechercher dans les réglages</string>
     <string name="settings_search_hint">Rechercher un réglage</string>
     <string name="settings_search_empty">Aucun réglage ne correspond.</string>

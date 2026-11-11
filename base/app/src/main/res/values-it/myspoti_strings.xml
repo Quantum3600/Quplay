@@ -562,8 +562,8 @@
     <string name="settings_player_lyrics_card_detail">La scheda del testo sotto il lettore. Disattivata, uno scorrimento verso l\'alto sulla copertina apre comunque il testo.</string>
     <string name="settings_player_source_title">Fonte e qualità nel lettore</string>
     <string name="settings_player_source_detail">La riga che dice cosa suona e come. Disattivata, Qualità audio e Stats for nerds sono nel menu del lettore.</string>
-    <string name="settings_player_capsule_title">Capsula nel lettore</string>
-    <string name="settings_player_capsule_detail">I pulsanti in fondo al lettore. Disattivata, Ascolta su è nel menu del lettore.</string>
+    <string name="settings_player_capsule_title">«Ascolta su» nel lettore</string>
+    <string name="settings_player_capsule_detail">Il pulsante «Ascolta su» in fondo al lettore. Disattivato, Ascolta su è nel menu del lettore.</string>
     <string name="settings_search">Cerca nelle impostazioni</string>
     <string name="settings_search_hint">Cerca un\'impostazione</string>
     <string name="settings_search_empty">Nessuna impostazione corrisponde.</string>

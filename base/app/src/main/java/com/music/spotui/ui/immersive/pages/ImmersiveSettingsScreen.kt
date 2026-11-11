@@ -923,10 +923,6 @@ private fun DisplayPage(open: (SettingsPage) -> Unit, back: () -> Unit) {
                         onChecked = { com.music.spotui.data.preferences.PlayerCapsulePref.set(ctx, it) }, detail = stringResource(R.string.settings_player_capsule_detail))
                 }
                 row {
-                    ImmersiveSwitchRow(stringResource(R.string.settings_player_modes_title), checked = com.music.spotui.data.preferences.PlayerModesPref.on,
-                        onChecked = { com.music.spotui.data.preferences.PlayerModesPref.set(ctx, it) }, detail = stringResource(R.string.settings_player_modes_detail))
-                }
-                row {
                     ImmersiveSwitchRow(stringResource(R.string.settings_player_volume_title), checked = com.music.spotui.data.preferences.PlayerVolumePref.on,
                         onChecked = { com.music.spotui.data.preferences.PlayerVolumePref.set(ctx, it) }, detail = stringResource(R.string.settings_player_volume_detail))
                 }

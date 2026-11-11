@@ -562,8 +562,8 @@
     <string name="settings_player_lyrics_card_detail">La tarjeta de letra bajo el reproductor. Desactivada, deslizar hacia arriba en la portada sigue abriendo la letra.</string>
     <string name="settings_player_source_title">Fuente y calidad en el reproductor</string>
     <string name="settings_player_source_detail">La línea que dice qué suena y cómo. Desactivada, Calidad de sonido y Stats for nerds están en el menú del reproductor.</string>
-    <string name="settings_player_capsule_title">Cápsula en el reproductor</string>
-    <string name="settings_player_capsule_detail">Los botones de la parte inferior del reproductor. Desactivada, Escuchar en está en el menú del reproductor.</string>
+    <string name="settings_player_capsule_title">«Escuchar en» en el reproductor</string>
+    <string name="settings_player_capsule_detail">El botón «Escuchar en» en la parte inferior del reproductor. Desactivado, Escuchar en está en el menú del reproductor.</string>
     <string name="settings_search">Buscar en los ajustes</string>
     <string name="settings_search_hint">Buscar un ajuste</string>
     <string name="settings_search_empty">Ningún ajuste coincide.</string>

@@ -575,8 +575,8 @@
     <string name="settings_player_lyrics_card_detail">播放器下方的歌词卡片。关闭后，在封面上向上滑动仍可打开歌词。</string>
     <string name="settings_player_source_title">播放器中的来源和音质</string>
     <string name="settings_player_source_detail">说明正在播放什么以及如何播放的那一行。关闭后，“音质”和 Stats for nerds 在播放器菜单中。</string>
-    <string name="settings_player_capsule_title">播放器中的胶囊按钮</string>
-    <string name="settings_player_capsule_detail">播放器底部的按钮。关闭后，“在…上收听”在播放器菜单中。</string>
+    <string name="settings_player_capsule_title">播放器中的收听设备按钮</string>
+    <string name="settings_player_capsule_detail">播放器底部的“收听设备”按钮。关闭后，“在…上收听”在播放器菜单中。</string>
     <string name="settings_search">搜索设置</string>
     <string name="settings_search_hint">搜索设置</string>
     <string name="settings_search_empty">没有匹配的设置。</string>

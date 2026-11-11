@@ -61,7 +61,6 @@ internal object SettingsSearch {
         SettingsEntry(R.string.settings_player_lyrics_card_title, R.string.settings_player_lyrics_card_detail, "Display"),
         SettingsEntry(R.string.settings_player_source_title, R.string.settings_player_source_detail, "Display"),
         SettingsEntry(R.string.settings_player_capsule_title, R.string.settings_player_capsule_detail, "Display"),
-        SettingsEntry(R.string.settings_player_modes_title, R.string.settings_player_modes_detail, "Display"),
         SettingsEntry(R.string.settings_player_volume_title, R.string.settings_player_volume_detail, "Display"),
         SettingsEntry(R.string.settings_rotation_title, 0, "Display"),
         SettingsEntry(R.string.settings_item_app_language_title, 0, "Display"),

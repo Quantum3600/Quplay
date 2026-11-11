@@ -562,8 +562,8 @@
     <string name="settings_player_lyrics_card_detail">Die Songtext-Karte unter dem Player. Aus: Ein Wischen nach oben auf dem Cover öffnet den Songtext weiterhin.</string>
     <string name="settings_player_source_title">Quelle und Qualität im Player</string>
     <string name="settings_player_source_detail">Die Zeile, die sagt, was wie läuft. Aus: Klangqualität und Stats for nerds stehen im Menü des Players.</string>
-    <string name="settings_player_capsule_title">Kapsel im Player</string>
-    <string name="settings_player_capsule_detail">Die Tasten unten im Player. Aus: „Hören auf“ steht im Menü des Players.</string>
+    <string name="settings_player_capsule_title">„Hören auf“ im Player</string>
+    <string name="settings_player_capsule_detail">Die „Hören auf“-Schaltfläche unten im Player. Aus: „Hören auf“ steht im Menü des Players.</string>
     <string name="settings_search">Einstellungen durchsuchen</string>
     <string name="settings_search_hint">Einstellung suchen</string>
     <string name="settings_search_empty">Keine Einstellung passt.</string>

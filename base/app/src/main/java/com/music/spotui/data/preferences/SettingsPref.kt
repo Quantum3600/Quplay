@@ -320,9 +320,8 @@ object PlayerSourceLinePref {
 }
 
 /**
- * "Capsule in the player" (Settings > Display, Immersive look): the capsule at the bottom of the
- * player (devices, with shuffle and repeat when [PlayerModesPref] is on). On by default; off, the
- * player's menu has a Listen on row for the devices.
+ * "Listen on in the player" (Settings > Display, Immersive look): the Listen on (devices) button
+ * at the bottom of the player. On by default; off, the player's menu has a Listen on row.
  */
 object PlayerCapsulePref {
     private const val KEY = "immersive_player_capsule"

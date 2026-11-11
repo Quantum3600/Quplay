@@ -727,14 +727,9 @@ private fun PlayerControlsBlock(
     PlayerActionRow(
         lyricsOpen = lyricsOpen,
         queueOpen = queueOpen,
-        shuffleEnabled = state.shuffle || state.smart,
-        smartEnabled = state.smart,
-        repeatMode = state.repeatMode,
         deviceActive = state.deviceName != null,
         onToggleLyrics = onToggleLyrics,
         onToggleQueue = onToggleQueue,
-        onToggleShuffle = actions.toggleShuffle,
-        onCycleRepeat = actions.cycleRepeat,
         onOpenDevices = onOpenDevices,
     )
     // Buttons from extensions (player.buttons), under the player's own controls.
