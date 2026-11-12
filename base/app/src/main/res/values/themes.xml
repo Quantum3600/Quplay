@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. Material 3 + Spotify -->
-    <style name="Theme.Myspoti" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.Quplay" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Material 3 Primary -->
         <item name="colorPrimary">@color/primary</item>
         <item name="colorOnPrimary">@color/on_primary</item>
@@ -33,4 +33,5 @@
         <!-- Light status bar icons (white icons on dark background) -->
         <item name="android:windowLightStatusBar">false</item>
     </style>
+    <style name="Theme.Myspoti" parent="Theme.Quplay" />
 </resources>

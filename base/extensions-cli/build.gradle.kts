@@ -12,7 +12,7 @@ kotlin {
 }
 
 application {
-    mainClass.set("app.myspoti.extensions.cli.RunKt")
+    mainClass.set("app.quplay.extensions.cli.RunKt")
     applicationName = "myspoti-ext"
 }
 

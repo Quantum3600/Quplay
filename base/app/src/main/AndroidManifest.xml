@@ -30,21 +30,21 @@
     <uses-feature android:name="android.hardware.wifi" android:required="false" />
 
     <application
-        android:name="app.myspoti.MyspotiApplication"
+        android:name="app.quplay.MyspotiApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="${appLabel}"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:banner="@drawable/tv_banner"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Myspoti"
+        android:theme="@style/Theme.Quplay"
         android:usesCleartextTraffic="false">
         <!-- Samsung DeX: the app keeps running (and playing) when the window moves to or from DeX. -->
         <meta-data android:name="com.samsung.android.keepalive.density" android:value="true" />
         <meta-data android:name="com.samsung.android.multidisplay.keep_process_alive" android:value="true" />
         <!-- Cover art for Android Auto (content:// only); Spotify image CDN hosts only. -->
         <provider
-            android:name="com.music.spotui.di.ArtworkProvider"
+            android:name="com.music.quplayui.di.ArtworkProvider"
             android:authorities="${applicationId}.artwork"
             android:exported="true" />
         <!-- Share-as-image cards, handed to the target app through a read grant. -->
@@ -78,7 +78,7 @@
         <!-- Debug and beta builds only (cliEnabled, build.gradle.kts): tools/myspoti-cli drives the app over adb.
              DUMP is held by the adb shell, not by other apps. -->
         <receiver
-            android:name="com.music.spotui.cli.CliReceiver"
+            android:name="com.music.quplayui.cli.CliReceiver"
             android:enabled="${cliEnabled}"
             android:exported="true"
             android:permission="android.permission.DUMP">
@@ -88,7 +88,7 @@
         </receiver>
 
         <activity
-            android:name="app.myspoti.MainActivity"
+            android:name="app.quplay.MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
             android:screenOrientation="unspecified"
@@ -96,7 +96,7 @@
             android:supportsPictureInPicture="true"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|keyboard|navigation|density"
             android:windowSoftInputMode="adjustResize"
-            android:theme="@style/Theme.Myspoti">
+            android:theme="@style/Theme.Quplay">
             <!-- Desktop windows (Samsung DeX, freeform): opens in a landscape window, resizable. -->
             <layout
                 android:defaultWidth="1100dp"
@@ -207,10 +207,10 @@
 
         <!-- Spotify's account pages, in a browser that shares the app's sign-in. -->
         <activity
-            android:name="com.music.spotui.ui.screens.AccountBrowser"
+            android:name="com.music.quplayui.ui.screens.AccountBrowser"
             android:exported="false"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
-            android:theme="@style/Theme.Myspoti" />
+            android:theme="@style/Theme.Quplay" />
         <!-- Per-app language on Android 12 and older (AppCompat stores the choice). -->
         <service
             android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
@@ -219,7 +219,7 @@
             <meta-data android:name="autoStoreLocales" android:value="true" />
         </service>
         <receiver
-            android:name="com.music.spotui.data.api.AppUpdater$StatusReceiver"
+            android:name="com.music.quplayui.data.api.AppUpdater$StatusReceiver"
             android:exported="false" />
         <receiver
             android:name="androidx.media.session.MediaButtonReceiver"
@@ -233,7 +233,7 @@
 
         <!-- Home screen widget: now playing with controls. -->
         <receiver
-            android:name="com.music.spotui.widget.NowPlayingWidget"
+            android:name="com.music.quplayui.widget.NowPlayingWidget"
             android:exported="false"
             android:label="${appLabel}">
             <intent-filter>

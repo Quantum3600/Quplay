@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "app.myspoti.host.android"
+    namespace = "app.quplay.host.android"
     compileSdk = 37
 
     defaultConfig {

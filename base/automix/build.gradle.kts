@@ -19,7 +19,7 @@ dependencies {
 // Desktop bench on real songs: ./gradlew :automix:bench -Pargs="<dir> ..." (see tools/automix/README.md).
 tasks.register<JavaExec>("bench") {
     classpath = sourceSets["test"].runtimeClasspath
-    mainClass.set("app.myspoti.automix.BenchKt")
+    mainClass.set("app.quplay.automix.BenchKt")
     args = (findProperty("args") as String?)?.split(" ")?.filter { it.isNotBlank() } ?: emptyList()
     jvmArgs("-Xmx4g")
     environment("AUTOMIX_THREADS", (findProperty("threads") as String?) ?: "2")

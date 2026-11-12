@@ -25,7 +25,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Myspoti"
+rootProject.name = "Quplay"
 include(":app")
 include(":api")
 include(":automix")

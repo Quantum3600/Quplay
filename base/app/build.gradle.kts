@@ -28,7 +28,7 @@ android {
             all { it.systemProperty("roborazzi.test.record", "true") }
         }
     }
-    namespace = "app.myspoti.engine"
+    namespace = "app.quplay.engine"
     compileSdk = 37
 
     // Two channels that install side by side: betas ("2.0.0-beta.3") stay "app.myspoti",
@@ -222,7 +222,7 @@ tasks.register("collectApks") {
     mustRunAfter("assembleRelease")
     val version = (findProperty("appVersionName") as String?) ?: "2.4.0"
     val beta = findProperty("appVersionName") == null || version.contains("-beta")
-    val app = when { findProperty("overDev") != null -> "Myspoti-dev"; beta -> "Myspoti-Beta"; else -> "Myspoti" }
+    val app = when { findProperty("overDev") != null -> "Quplay-dev"; beta -> "Quplay-Beta"; else -> "Quplay" }
     // Copies: the configuration cache cannot keep a reference to the script's own values.
     val abis = RELEASE_ABIS.toList()
     val abiNames = ABI_NAMES.toMap()
