@@ -179,11 +179,10 @@ internal fun rememberTabNavigation(navController: NavController): TabNavigation 
     return TabNavigation(selectedTab, onTabClick, fullScreen)
 }
 
-// Friend activity is not a tab any more: it opens from Home's header, as in Spotify.
-private val TabRoutes = listOf(Routes.Home.route, Routes.Search.route, Routes.Library.route)
+private val TabRoutes = listOf(Routes.Home.route, Routes.WhatsNew.route, Routes.Library.route, Routes.Search.route)
 
 /** The tabs the bar shows. */
-internal val TabItems = listOf(Routes.Home, Routes.Library, Routes.Search)
+internal val TabItems = listOf(Routes.Home, Routes.WhatsNew, Routes.Library, Routes.Search)
 
 /** The tab bar itself (pill and Search circle), filling the width [modifier] leaves it. */
 @Composable
@@ -219,7 +218,7 @@ internal fun TabBarContent(
             contentKey = selectedTab,
         ) {
             // Search is the odd one out: a circle of its own beside the pill.
-            listOf(Routes.Home, Routes.Library).forEach { item ->
+            listOf(Routes.Home, Routes.WhatsNew, Routes.Library).forEach { item ->
                 val tint = if (selectedTab == item.route) Immersive.Accent else Immersive.Text.copy(alpha = 0.65f)
                 tab(
                     key = item.route,

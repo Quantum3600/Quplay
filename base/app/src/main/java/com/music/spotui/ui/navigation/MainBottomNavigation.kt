@@ -178,10 +178,10 @@ fun MainBottomNavigation(navController: NavHostController) {
 private val TabItems: List<Routes>
     get() {
         val tabs =
-            mapOf("home" to Routes.Home, "search" to Routes.Search, "library" to Routes.Library)
+            mapOf("home" to Routes.Home, "whatsnew" to Routes.WhatsNew, "library" to Routes.Library, "search" to Routes.Search)
         return com.music.spotui.extensions.ExtensionLook.navOrder?.mapNotNull { tabs[it] }
             ?.takeIf { it.size == tabs.size }
-            ?: listOf(Routes.Home, Routes.Search, Routes.Library)
+            ?: listOf(Routes.Home, Routes.WhatsNew, Routes.Library, Routes.Search)
     }
 
 /** The tab shown (also on its sub-pages) and what a tap on a tab does; shared by the bar and the rail. */

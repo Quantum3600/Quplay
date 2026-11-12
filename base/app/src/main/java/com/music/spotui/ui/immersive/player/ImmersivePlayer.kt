@@ -148,7 +148,7 @@ private val ART_TITLE_GAP = 20.dp
 private val ART_BOX_TOP_PAD = 8.dp
 private val DISMISS_STRIP_HEIGHT = 32.dp
 
-private val CONTROL_DELAY = 4000L.milliseconds
+private val CONTROL_DELAY = 10000L.milliseconds
 /** The player's side margin. Scrollable panels reach back across it. */
 internal val PLAYER_GUTTER = 30.dp
 
@@ -838,7 +838,7 @@ private fun RowScope.PlayerCredits(
     Spacer(Modifier.width(10.dp))
     // Beside the credits rather than in the toggle row: liking is about this song.
     CircleGlyph(
-        icon = if (state.liked) Icons.Rounded.Star else Icons.Rounded.StarBorder,
+        icon = if (state.liked) R.drawable.star_filled else R.drawable.star_outline,
         contentDescription = stringResource(if (state.liked) R.string.immersive_player_unlike else R.string.immersive_player_like),
         onClick = actions.toggleLike,
         active = state.liked,

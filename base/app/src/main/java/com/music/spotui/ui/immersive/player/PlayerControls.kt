@@ -37,6 +37,8 @@ import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.automirrored.rounded.VolumeDown
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.Devices
+import androidx.compose.material.icons.rounded.FastForward
+import androidx.compose.material.icons.rounded.FastRewind
 import androidx.compose.material.icons.rounded.Lyrics
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -55,12 +57,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -73,6 +77,7 @@ import com.music.spotui.ui.look.MeshPalette
 import com.music.spotui.ui.look.ThinSlider
 import com.music.spotui.ui.theme.SpotuiTheme
 import com.music.spotui.ui.components.rememberFrameClock
+import com.music.spotui.ui.immersive.player.BottomGlyph
 
 /**
  * The colour every secondary line and glyph in the player is set in: the cover's own colour
@@ -211,6 +216,46 @@ internal fun CircleGlyph(
     }
 }
 
+@Composable
+internal fun CircleGlyph(
+    icon: Int,
+    contentDescription: String,
+    onClick: () -> Unit,
+    active: Boolean = false,
+) {
+    val discAlpha by animateFloatAsState(
+        targetValue = if (active) 0.34f else 0.18f,
+        label = "glyphDisc",
+    )
+    Box(
+        modifier = Modifier
+            .size(34.dp)
+            .clip(CircleShape)
+            .background(LocalPlayerTint.current.copy(alpha = discAlpha))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+            ) {
+                Haptics.click()
+                onClick()
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        Crossfade(
+            targetState = icon,
+            animationSpec = tween(durationMillis = 180),
+            label = "playerMenuGlyph",
+        ) { glyph ->
+            Icon(
+                painter = painterResource(glyph),
+                contentDescription = contentDescription,
+                tint = LocalPlayerTint.current,
+                modifier = Modifier.size(19.dp),
+            )
+        }
+    }
+}
+
 /** The skip glyphs' touch box, beside the larger play button. */
 private val PLAYER_SKIP_TOUCH_SIZE = 64.dp
 
@@ -239,7 +284,7 @@ internal fun TransportRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TransportGlyph(
-            icon = Icons.Rounded.SkipPrevious,
+            icon = Icons.Rounded.FastRewind,
             contentDescription = stringResource(R.string.immersive_player_previous),
             size = 64.dp,
             touchSize = PLAYER_SKIP_TOUCH_SIZE,
@@ -251,7 +296,7 @@ internal fun TransportRow(
         if (loading) {
             // Same footprint as the play/pause target: a smaller box would shunt everything below it.
             Box(Modifier.size(playTouch), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Color.White, strokeWidth = 3.dp, modifier = Modifier.size(38.dp))
+                CircularProgressIndicator(color = Color.White, strokeWidth = 5.dp, modifier = Modifier.size(38.dp))
             }
         } else {
             TransportGlyph(
@@ -264,7 +309,7 @@ internal fun TransportRow(
         }
         }
         TransportGlyph(
-            icon = Icons.Rounded.SkipNext,
+            icon = Icons.Rounded.FastForward,
             contentDescription = stringResource(R.string.immersive_player_next),
             size = 64.dp,
             touchSize = PLAYER_SKIP_TOUCH_SIZE,
@@ -353,7 +398,7 @@ private val BOTTOM_ACTION_SIZE = 44.dp
  */
 @Composable
 private fun BottomGlyph(
-    icon: ImageVector,
+    icon: Int,
     contentDescription: String,
     onClick: () -> Unit,
     highlighted: Boolean = false,
@@ -389,7 +434,7 @@ private fun BottomGlyph(
             label = "bottomGlyphIconSwap",
         ) { glyph ->
             Icon(
-                imageVector = glyph,
+                painter = painterResource(glyph),
                 contentDescription = null,
                 tint = LocalPlayerTint.current.copy(alpha = iconAlpha),
                 modifier = Modifier.size(24.dp),
@@ -421,7 +466,7 @@ internal fun PlayerActionRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         BottomGlyph(
-            icon = Icons.Rounded.Lyrics,
+            icon = R.drawable.lyrics,
             contentDescription = stringResource(if (lyricsOpen) R.string.immersive_player_lyrics_close else R.string.immersive_player_lyrics),
             onClick = onToggleLyrics,
             highlighted = lyricsOpen,
@@ -435,10 +480,33 @@ internal fun PlayerActionRow(
             )
         }
         BottomGlyph(
-            icon = Icons.AutoMirrored.Rounded.QueueMusic,
+            icon = R.drawable.mingcute__playlist_2_fill,
             contentDescription = stringResource(if (queueOpen) R.string.immersive_player_queue_close else R.string.immersive_player_queue),
             onClick = onToggleQueue,
             highlighted = queueOpen,
+        )
+    }
+}
+private val BOTTOM_GLYPH_SIZE = 44.dp
+@Composable
+private fun BottomGlyph(icon: ImageVector, contentDescription: String, onClick: () -> Unit, highlighted: Boolean = false) {
+    Box(
+        modifier = Modifier
+            .size(BOTTOM_GLYPH_SIZE)
+            .clip(CircleShape)
+            .background(if (highlighted) LocalPlayerTint.current.copy(alpha = 0.20f) else Color.Transparent)
+            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+                Haptics.click()
+                onClick()
+            }
+            .semantics { this.contentDescription = contentDescription },
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = LocalPlayerTint.current.copy(alpha = if (highlighted) 1f else 0.75f),
+            modifier = Modifier.size(26.dp),
         )
     }
 }

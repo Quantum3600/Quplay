@@ -297,7 +297,6 @@ private fun HomeHeaderRow(navController: NavController, facet: String, onFacet: 
             }
         }
         }
-        WhatsNewBell { navController.navigate(com.music.spotui.ui.navigation.Routes.WhatsNew.route) }
         // B31: a separator between the profile and the options, reported missing from this
         // header (the sheets already carry one).
         Box(

@@ -214,7 +214,6 @@ fun ImmersiveHomeScreen(navController: NavController) {
                 onClick = { navController.navigate(com.music.spotui.ui.navigation.Routes.Friends.route) },
             )
             val size = LocalBarControlSize.current
-            WhatsNewBell(size) { navController.navigate(Routes.WhatsNew.route) }
             // The tap area is the header's full height and reaches past the disc toward the
             // title, so the small disc of the minimized bar is still easy to hit.
             Box(

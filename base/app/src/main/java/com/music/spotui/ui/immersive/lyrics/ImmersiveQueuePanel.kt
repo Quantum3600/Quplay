@@ -567,7 +567,7 @@ private fun QueueHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 6.dp),
+            .padding(top = 8.dp, bottom = 6.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically,
     ) {
